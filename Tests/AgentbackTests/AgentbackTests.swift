@@ -22,7 +22,7 @@ private func response(_ request: URLRequest, status: Int = 201,
         #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
         #expect(request.value(forHTTPHeaderField: "Authorization") == nil)
         let body = try #require(JSONSerialization.jsonObject(with: request.httpBody!) as? [String: String])
-        #expect(body == ["message": "行情没有刷新", "category": "bug", "source": "direct", "version": "0.15.15"])
+        #expect(body == ["message": "行情没有刷新", "category": "bug", "source": "native", "version": "0.15.15"])
         return response(request)
     }
     let receipt = try await client.send(.init(message: "  行情没有刷新\n", category: .bug, version: "0.15.15"))
@@ -110,4 +110,14 @@ func rejectsMalformedReceipt(body: String) async throws {
     await #expect(throws: AgentbackError.http(status: 200, retryAfter: nil)) {
         try await client.send(.init(message: "Valid"))
     }
+}
+
+@Test(arguments: [Agentback.Source.direct, .mcp, .cli, .web])
+func preservesExplicitSourceOverride(source: Agentback.Source) async throws {
+    let client = try Agentback(projectKey: key, origin: origin) { request in
+        let body = try #require(JSONSerialization.jsonObject(with: request.httpBody!) as? [String: String])
+        #expect(body["source"] == source.rawValue)
+        return response(request)
+    }
+    _ = try await client.send(.init(message: "Explicit channel", source: source))
 }

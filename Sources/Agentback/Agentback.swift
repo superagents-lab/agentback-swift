@@ -10,7 +10,7 @@ public struct Agentback: Sendable {
     }
 
     public enum Source: String, Codable, Sendable {
-        case direct, mcp, cli, web
+        case direct, mcp, cli, web, native
     }
 
     public enum Outcome: String, Codable, Sendable {
@@ -53,7 +53,7 @@ public struct Agentback: Sendable {
         public var agent: Reporter?
         public var identity: Identity?
 
-        public init(message: String, category: Category = .other, source: Source = .direct,
+        public init(message: String, category: Category = .other, source: Source = .native,
                     version: String? = nil, outcome: Outcome? = nil, intent: String? = nil,
                     expected: String? = nil, actual: String? = nil, suggestion: String? = nil,
                     tool: String? = nil, requestID: String? = nil, agent: Reporter? = nil,

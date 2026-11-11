@@ -2,7 +2,7 @@
 
 A dependency-free, submission-only Swift Package for macOS 12+ and iOS 15+,
 using Swift 6 and Foundation. Pulse Mac is its first integration. Native reports
-use the existing `direct` source and require no server migration.
+use the existing `native` source and require no server migration.
 
 ## Install
 
@@ -12,12 +12,12 @@ In Xcode, choose **File → Add Package Dependencies**, enter:
 https://github.com/superagents-lab/agentback-swift.git
 ```
 
-Choose **Up to Next Major Version** starting at **0.1.0**, then add the `Agentback`
+Choose **Up to Next Major Version** starting at **0.2.0**, then add the `Agentback`
 product to your app target. With a `Package.swift` manifest:
 
 ```swift
 // Package dependencies:
-.package(url: "https://github.com/superagents-lab/agentback-swift.git", from: "0.1.0")
+.package(url: "https://github.com/superagents-lab/agentback-swift.git", from: "0.2.0")
 // Target dependencies:
 .product(name: "Agentback", package: "agentback-swift")
 ```
@@ -53,7 +53,7 @@ after the prefix); secret keys and identity secrets are rejected.
 
 Optional fields include `outcome`, `intent`, `expected`, `actual`, `suggestion`,
 `tool`, `requestID`, `agent`, and `identity`. For local MCP servers or CLIs, set
-`source: .mcp` or `.cli`; native user feedback defaults to `.direct`. The SDK
+`source: .mcp` or `.cli`; native user feedback defaults to `.native`. The SDK
 validates trimmed text against the service's UTF-16 limits and 64 KiB body limit.
 There is no support for server-only context or status changes.
 
@@ -89,7 +89,7 @@ swift test
 
 The tests use an injected transport and never send feedback or email.
 
-## Scope of 0.1.0
+## Scope
 
 This release submits text feedback. It does not upload log files, screenshots or
 other attachments, and it does not include a default feedback UI. Native apps
@@ -98,3 +98,13 @@ should not embed server-only keys or silently collect diagnostics.
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+## Upgrading from 0.1.0
+
+Version 0.2.0 defaults to `source: .native` for app forms. Explicit `.mcp`, `.cli`,
+`.web` and `.direct` overrides remain available. The source identifies the
+feedback entry point, not the operating system; no platform field is collected.
+The hosted Agentback service accepts both old and new clients. Self-hosted
+services must apply the native-source migration and deploy the updated service
+before upgrading this package, or explicitly use `.direct` until upgraded.
+Historical `direct` reports are not relabeled.

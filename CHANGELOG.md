@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0
+
+- Native app forms now default to `source: native`, separate from web, MCP and CLI feedback.
+- Explicit `direct`, `mcp`, `cli` and `web` sources remain supported.
+- No operating-system detection or platform field is added.
+- Requires a service that accepts `native`; self-hosted installations must upgrade first or pass `.direct`.
+
 ## 0.1.0
 
 Initial public release of the submission-only Agentback Swift SDK.
