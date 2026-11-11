@@ -1,0 +1,19 @@
+name: Swift package
+on:
+  push:
+    branches: [main]
+    tags: ['[0-9]*']
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: swift --version
+      - name: Test package
+        run: swift test
+      - name: Build iOS simulator target
+        run: swift build --scratch-path .build-ios --triple arm64-apple-ios15.0-simulator --sdk "$(xcrun --sdk iphonesimulator --show-sdk-path)"
