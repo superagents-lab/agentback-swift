@@ -47,12 +47,12 @@ The client has a 20-second request timeout and does not queue or retry on its ow
 A network error can mean the report was stored but its response was lost.
 
 Only the report fields you explicitly pass are sent. The SDK collects no device
-identifiers, logs, email addresses or diagnostics, and uses an ephemeral URLSession
+identifiers, logs or diagnostics, and attaches an email address only when you pass one, and uses an ephemeral URLSession
 by default. Native apps ship only the public `af_` key (64 hexadecimal characters
 after the prefix); secret keys and identity secrets are rejected.
 
 Optional fields include `outcome`, `intent`, `expected`, `actual`, `suggestion`,
-`tool`, `requestID`, `agent`, and `identity`. For local MCP servers or CLIs, set
+`tool`, `requestID`, `agent`, `identity`, and `email`. For local MCP servers or CLIs, set
 `source: .mcp` or `.cli`; native user feedback defaults to `.native`. The SDK
 validates trimmed text against the service's UTF-16 limits and 64 KiB body limit.
 There is no support for server-only context or status changes.
@@ -69,6 +69,19 @@ let report = Agentback.Report(message: message, identity: identity)
 Compute the HMAC-SHA256 signature on your backend using the project's identity
 secret. Never ship that secret or calculate signatures inside the app. Without a
 backend, leave reports anonymous.
+
+## Reporter email
+
+To reply to whoever sent a report, pass their address. It is optional, separate
+from the account and needs no signature:
+
+```swift
+let report = Agentback.Report(message: message, identity: identity, email: user.email)
+```
+
+The address shows on the report in the inbox. Because the app holds only a public
+key, it is self-reported: anyone with the key can send any address. Ask the user
+before attaching it, or prefill it in your form and let them change it.
 
 ## Failures and testing
 
