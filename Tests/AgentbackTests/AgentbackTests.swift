@@ -46,6 +46,24 @@ private func response(_ request: URLRequest, status: Int = 201,
                                    identity: .init(account: " opaque-id ", signature: signature)))
 }
 
+@Test func sendsTrimmedEmailWithoutIdentity() async throws {
+    let client = try Agentback(projectKey: key, origin: origin) { request in
+        let body = try #require(JSONSerialization.jsonObject(with: request.httpBody!) as? [String: String])
+        #expect(body == ["message": "Hi", "category": "other", "source": "native", "email": "ada@example.com"])
+        return response(request)
+    }
+    _ = try await client.send(.init(message: "Hi", email: " ada@example.com "))
+}
+
+@Test func omitsBlankEmail() async throws {
+    let client = try Agentback(projectKey: key, origin: origin) { request in
+        let body = try #require(JSONSerialization.jsonObject(with: request.httpBody!) as? [String: String])
+        #expect(body["email"] == nil)
+        return response(request)
+    }
+    _ = try await client.send(.init(message: "Hi", email: "  "))
+}
+
 @Test func validatesBeforeSending() async throws {
     let client = try Agentback(projectKey: key, origin: origin) { request in
         Issue.record("Invalid report reached transport")
@@ -58,6 +76,11 @@ private func response(_ request: URLRequest, status: Int = 201,
     }
     await #expect(throws: AgentbackError.invalidReport(field: "version")) {
         try await client.send(.init(message: "Valid", version: String(repeating: "a", count: 65)))
+    }
+    for email in ["not-an-email", "a@b", String(repeating: "a", count: 250) + "@b.co"] {
+        await #expect(throws: AgentbackError.invalidReport(field: "email")) {
+            try await client.send(.init(message: "Valid", email: email))
+        }
     }
     await #expect(throws: AgentbackError.invalidReport(field: "account_signature")) {
         try await client.send(.init(message: "Valid", identity: .init(account: "user", signature: "bad")))

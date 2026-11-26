@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.0
+
+- `Report` takes an optional `email`, the reporter's address so you can reply. It is trimmed, a blank value is left out, and it needs no signature; the service treats it as self-reported.
+- Requires a service that accepts `email` (agentback.app does from this release).
+
 ## 0.2.0
 
 - Native app forms now default to `source: native`, separate from web, MCP and CLI feedback.

@@ -52,12 +52,15 @@ public struct Agentback: Sendable {
         public var requestID: String?
         public var agent: Reporter?
         public var identity: Identity?
+        /// The reporter's address, so you can reply. Only sent when you pass it, needs no
+        /// signature, and is self-reported: the service cannot verify it.
+        public var email: String?
 
         public init(message: String, category: Category = .other, source: Source = .native,
                     version: String? = nil, outcome: Outcome? = nil, intent: String? = nil,
                     expected: String? = nil, actual: String? = nil, suggestion: String? = nil,
                     tool: String? = nil, requestID: String? = nil, agent: Reporter? = nil,
-                    identity: Identity? = nil) {
+                    identity: Identity? = nil, email: String? = nil) {
             self.message = message
             self.category = category
             self.source = source
@@ -71,6 +74,7 @@ public struct Agentback: Sendable {
             self.requestID = requestID
             self.agent = agent
             self.identity = identity
+            self.email = email
         }
     }
 
@@ -178,6 +182,7 @@ private struct Payload: Encodable {
     let agent: Agentback.Reporter?
     let account: String?
     let account_signature: String?
+    let email: String?
 
     init(_ report: Agentback.Report) throws {
         func text(_ value: String?, _ field: String, _ limit: Int) throws -> String? {
@@ -203,6 +208,12 @@ private struct Payload: Encodable {
             agent = try .init(name: text(reporter.name, "agent.name", 128),
                               model: text(reporter.model, "agent.model", 128))
         } else { agent = nil }
+        let email = try text(report.email, "email", 254)
+        if let email, !email.isEmpty,
+           email.range(of: #"^[^\s@]+@[^\s@]+\.[^\s@]+$"#, options: .regularExpression) == nil {
+            throw AgentbackError.invalidReport(field: "email")
+        }
+        self.email = email?.isEmpty == false ? email : nil
         account = try text(report.identity?.account, "account", 256)
         account_signature = report.identity?.signature
         if let identity = report.identity {
